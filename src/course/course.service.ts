@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Course, CourseDocument } from './course.schema';
 import { stringify } from 'querystring';
 import { CourseResponseDto } from './dto/course-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CourseService {
@@ -62,10 +63,10 @@ export class CourseService {
   }
 
   update(id: string, updateCourseDto: UpdateCourseDto) {
-    return this.courseModel.findByIdAndUpdate(id, updateCourseDto);
+    return this.courseModel.findByIdAndUpdate(id, plainToInstance(UpdateCourseDto, updateCourseDto), {new: true});
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} course`;
+  remove(id: string) {
+    return this.courseModel.findByIdAndDelete(id);
   }
 }

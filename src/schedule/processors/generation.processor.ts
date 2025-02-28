@@ -77,7 +77,9 @@ class OverlapStrategy extends Strategy{
         
         for(const session of selected){
             session.days.replace(/\s+/g, '').split('').map(day => {
-                sorted[days[day]].push(session);
+                if(days[day]){
+                    sorted[days[day]].push(session);
+                }
             });
         }
         
@@ -116,7 +118,9 @@ class MinimizeWindowsStrategy extends Strategy{
         
         for(const session of selected){
             session.days.replace(/\s+/g, '').split('').map(day => {
-                sorted[days[day]].push(session);
+                if(days[day]){
+                    sorted[days[day]].push(session);
+                }
             });
         }
         
@@ -136,6 +140,38 @@ class MinimizeWindowsStrategy extends Strategy{
         return score; 
     }
 }
+
+class ProfessorAvoidStrategy extends Strategy{
+    blacklist: string[];
+
+    constructor(professorBlacklist: string[]){
+        super();
+        this.blacklist = professorBlacklist;
+    }
+
+    penaltyConstant = 5e3;
+    penalize(courses: CourseDto[], picks: any[]): number {
+        var score = 0;
+       
+        const selected = courses.map((course, cindex) => {
+            return course.types.map((type, tindex) => {
+                const pick = picks[cindex].types[tindex].pick;
+                return type.sessions[pick];
+            });
+        }).flat();
+
+        for(const select of selected){
+                const name = select.faculty_member.toLowerCase();
+                for(const blacklisted of this.blacklist){
+                    if(name.includes(blacklisted.toLowerCase())) score += this.penaltyConstant;
+                }
+        }
+
+        return score; 
+    }
+}
+
+
 
 class ScheduleBoardState{
     courses: CourseDto[];
@@ -254,6 +290,10 @@ module.exports = async (job: SandboxedJob) => {
 
         if(options?.minimizeWindows){
             strategies.push(new MinimizeWindowsStrategy());
+        }
+
+        if(options?.professorBlacklist){
+            strategies.push(new ProfessorAvoidStrategy(options.professorBlacklist));
         }
 
         const scheduleBoard = new ScheduleBoard(courses, strategies);

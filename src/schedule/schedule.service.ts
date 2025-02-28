@@ -57,9 +57,11 @@ export class ScheduleService {
     if(!user) throw new NotFoundException();
     const schedule: Schedule | undefined = user.schedules.at(id);
     if(!schedule) throw new NotFoundException();
-    const courses: Course[] = schedule.courses.map((course) => course.body);
+    const courses: Course[] = schedule.courses.map((course) => course.body).filter(course => course !== null);
     const courseDtos: CourseDto[] = courses.map((course) => CourseDto.fromDocument(course));
     
+    console.log(generateDto.id);
+    console.log(courseDtos);
     const job = await this.queue.add('generate', { uid: uid, schedule: generateDto.id, courses: courseDtos, options: generateDto.options })
     return job.id;
   }

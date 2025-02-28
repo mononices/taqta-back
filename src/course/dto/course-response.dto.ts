@@ -34,10 +34,13 @@ export class CourseDto {
 
     static fromDocument(document: CourseDocument | Course): CourseDto{
         const inferred = {};
+        console.log(document);
         const sortedSessions: Session[][] = Array.from({ length: 7 }, () => []);
         for(const session of document.sessions){
             session.days.replace(/\s+/g, '').split('').map(day => {
-                sortedSessions[days[day]].push(session);
+                if(days[day]){
+                    sortedSessions[days[day]].push(session);
+                }
             });
 
             if(!inferred[session.type]) inferred[session.type] = {
@@ -83,7 +86,7 @@ export class CourseResponseDto {
 
     static fromDocument(document: CourseDocument | Course): CourseResponseDto{
         const inferred = {};
-        for(const session of document.sessions){
+        for(const session of (document.sessions)){
             if(!inferred[session.type]) inferred[session.type] = {
                 abbreviation: session.type,
                 sessions: [],

@@ -18,7 +18,7 @@ export class ScheduleResponseDto {
     _id: string;
     @Expose()
     @ValidateNested({each: true})
-    @Transform((value) => value.obj.courses.map((course) => plainToInstance(PartialCourseDto, course, {excludeExtraneousValues: true, enableCircularCheck: true})))
+    @Transform((value) => value.obj.courses.filter((course) => course.body !== null).map((course) => plainToInstance(PartialCourseDto, course, {excludeExtraneousValues: true, enableCircularCheck: true})))
     //@Type(() => PartialCourseDto)
     courses: PartialCourseDto[]   
 }

@@ -14,9 +14,9 @@ export class UserService {
   async getSchedules(id: string) {
     const schedules = await this.userModel.findById(id).select('schedules').populate('schedules').populate({
       path: 'schedules',
-      populate: { path: 'courses.body', populate: {path: 'sessions'} }
+      populate: { path: 'courses.body', match: { _id: { $ne: null } }, populate: {path: 'sessions', match: { _id: { $ne: null } }} }
     }).exec();
-
+    
     return plainToInstance(ScheduleListResponseDto, schedules, {excludeExtraneousValues: true, enableCircularCheck: true});
   }
 
