@@ -4,14 +4,27 @@ import { UpdateSessionDto } from './dto/update-session.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Session } from './session.schema';
+import { SessionDto } from './dto/session-response.dto';
+import { Course } from 'src/course/course.schema';
 
 @Injectable()
 export class SessionService {
-  constructor(@InjectModel("Session") private sessionModel: Model<Session>) {} 
+  constructor(
+    @InjectModel("Session") private sessionModel: Model<Session>,
+    @InjectModel("Course") private courseModel: Model<Course>
+  ) {} 
 
-  create(createSessionDto: CreateSessionDto) {
+  async create(createSessionDto: SessionDto) {
+    console.log(createSessionDto);
     const createdSession = new this.sessionModel(createSessionDto);
-    return createdSession.save(); 
+    const course_id = createSessionDto.course_id;
+    const savedSession = await createdSession.save();
+
+    if(course_id){
+      await this.courseModel.findByIdAndUpdate(course_id, { $push: { sessions: savedSession._id } });
+    }
+
+    return savedSession; 
   }
 
   findAll() {

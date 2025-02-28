@@ -1,10 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type SessionDocument = HydratedDocument<Session>;
 
 @Schema()
 export class Session{
+    _id: Types.ObjectId;
+    @Prop()
+    course_id: string;
     @Prop()
     school: string;
     @Prop()
@@ -22,13 +25,15 @@ export class Session{
     @Prop()
     ec_cr: number;
     @Prop()
-    start_date: string;
+    start_date: Date;
     @Prop()
-    end_date: string;
+    end_date: Date;
     @Prop()
     days: string;
     @Prop()
-    time: string;
+    start_time: string;
+    @Prop()
+    end_time: string;
     @Prop()
     enrolled: number;
     @Prop()

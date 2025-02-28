@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('course')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
@@ -13,8 +15,8 @@ export class CourseController {
   }
 
   @Get()
-  findAll(@Query('contains') contains?: string) {
-    return this.courseService.findAll(contains);
+  findAll(@Query('contains') contains?: string, @Query('degree') degree?: string, @Query('semester') semester?: string) {
+    return this.courseService.findAll(contains, degree, semester);
   }
 
   @Get(':id')
@@ -29,7 +31,7 @@ export class CourseController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
-    return this.courseService.update(+id, updateCourseDto);
+    return this.courseService.update(id, updateCourseDto);
   }
 
   @Delete(':id')

@@ -1,6 +1,7 @@
 export class CreateSessionDto {
     school: string;
     level: string;
+    course_id: string;
     abbreviation: string;
     section: string;
     type: string;

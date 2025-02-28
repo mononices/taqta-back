@@ -3,23 +3,53 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Course } from './course.schema';
+import { Course, CourseDocument } from './course.schema';
 import { stringify } from 'querystring';
+import { CourseResponseDto } from './dto/course-response.dto';
 
 @Injectable()
 export class CourseService {
   constructor(@InjectModel("Course") private courseModel: Model<Course>) {} 
 
-  create(createCourseDto: CreateCourseDto) {
+  async create(createCourseDto: CreateCourseDto) {
+    console.log(createCourseDto);
     const createdCourse = new this.courseModel(createCourseDto);
-    return createdCourse.save(); 
+    console.log(createdCourse);
+    return await createdCourse.save(); 
   }
 
-  findAll(contains?: string) {
-    if(contains)
-      return this.courseModel.find({ abbreviation: { $regex: contains, $options: 'i' }}).exec();
+  async findAll(contains?: string, degree?: string, semester?: string) : Promise<CourseResponseDto[]>{
+    if(!contains) contains = "";
+    if(!degree) degree = "";
+    let query = this.courseModel.find({ abbreviation: { $regex: contains, $options: 'i' }, level: { $regex: degree, $options: 'i' }});
+    if(semester){
+      const [termString, yearString] = semester.split(' ');
+      const year = Number(yearString);
+      const term = termString.toLowerCase();
 
-    return this.courseModel.find().exec();
+      let start = new Date();
+      let end = new Date();
+      
+      if(term == 'spring'){
+        start = new Date(year, 0, 1);
+        end = new Date(year, 4, 31);
+      }
+      else if(term == 'summer'){
+        start = new Date(year, 5, 1);
+        end = new Date(year, 6, 31)
+      }
+      else if(term == 'fall'){
+        start = new Date(year, 7, 1);
+        end = new Date(year, 11, 31);
+      }
+      
+      query = query.find({ start_date: { $gte: start, $lte: end } });
+    }
+
+    query = query.populate('sessions');
+    const docs: CourseDocument[] = await query.exec();
+    const dtos = docs.map((doc) => CourseResponseDto.fromDocument(doc));
+    return dtos; 
   }
 
   findOne(id: number) {
@@ -31,8 +61,8 @@ export class CourseService {
     return course?.lectures;
   }
 
-  update(id: number, updateCourseDto: UpdateCourseDto) {
-    return `This action updates a #${id} course`;
+  update(id: string, updateCourseDto: UpdateCourseDto) {
+    return this.courseModel.findByIdAndUpdate(id, updateCourseDto);
   }
 
   remove(id: number) {

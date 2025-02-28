@@ -2,13 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { SessionService } from './session.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
+import { SessionDto } from './dto/session-response.dto';
 
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post()
-  create(@Body() createSessionDto: CreateSessionDto) {
+  create(@Body() createSessionDto: SessionDto){
     return this.sessionService.create(createSessionDto);
   }
 

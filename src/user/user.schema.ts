@@ -1,6 +1,13 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, Types } from "mongoose";
-import { ScheduleSchema } from "src/schedule/schedule.schema";
+import { HydratedDocument, SchemaTypes, Types } from "mongoose";
+import { Schedule, ScheduleSchema } from "src/schedule/schedule.schema";
+
+export enum Role {
+    ADMIN = "admin",
+    STUDENT = "student",
+    FACULTY = "faculty",
+    HEAD = "head",
+};
 
 @Schema()
 export class User {
@@ -8,8 +15,10 @@ export class User {
     email: string;
     @Prop()
     hash?: string;
-    @Prop([ScheduleSchema])
-    schedules: Types.ObjectId[];
+    @Prop({type: [SchemaTypes.ObjectId], ref: 'Schedule'})
+    schedules: Schedule[];
+    @Prop()
+    role: Role;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
